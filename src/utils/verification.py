@@ -1,13 +1,31 @@
+from typing import Dict, List, Optional
+
+import numpy as np
 import torch
 from PIL import Image
 from sklearn.metrics.pairwise import cosine_similarity
 from torchvision import transforms
 
+from src.config import Config
 from src.model.face_recognition import FaceRecognitionModel
 
 
 class FaceVerifier:
-    def __init__(self, model_path, config):
+    """Face verification system using cosine similarity of embeddings."""
+
+    def __init__(self, model_path: str, config: Config) -> None:
+        """
+        Initialize face verifier with model and configuration.
+
+        :params model_path: Path to saved model weights
+        :type model_path: str
+
+        :params config: Configuration object containing:
+            - DEVICE: torch.device - Device for model execution
+            - NUM_CLASSES: Optional[int] - Number of classes in classifier
+            - VERIFICATION_THRESHOLD: float - Default similarity threshold
+        :type config: Config
+        """
         self.config = config
         self.device = config.DEVICE
         self.num_classes = config.NUM_CLASSES
@@ -16,7 +34,21 @@ class FaceVerifier:
             [transforms.ToTensor(), transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]
         )
 
-    def load_model(self, model_path):
+    def load_model(self, model_path: str) -> FaceRecognitionModel:
+        """
+        Load model weights with handling for classifier mismatch.
+
+        :params model_path: Path to saved model weights
+        :type model_path: str
+
+        :return: Initialized face recognition model
+        :rtype: FaceRecognitionModel
+
+        :note:
+            - Handles classifier size mismatch by loading backbone only
+            - Uses strict=False for state dict loading
+            - Moves model to configured device
+        """
         # Create model with the correct number of classes
         model = FaceRecognitionModel(num_classes=self.num_classes or 1)
 
@@ -44,7 +76,21 @@ class FaceVerifier:
         model.eval()
         return model
 
-    def preprocess_image(self, image_path):
+    def preprocess_image(self, image_path: str) -> torch.Tensor:
+        """
+        Preprocess image for model input.
+
+        :params image_path: Path to input image
+        :type image_path: str
+
+        :return: Preprocessed image tensor
+        :rtype: torch.Tensor
+
+        :note:
+            - Performs padding to square aspect ratio
+            - Resizes to 160x160 pixels
+            - Applies ImageNet normalization
+        """
         img = Image.open(image_path).convert("RGB")
         width, height = img.size
         max_dim = max(width, height)
@@ -55,14 +101,45 @@ class FaceVerifier:
         img = new_img.resize((160, 160), Image.BILINEAR)
         return self.transform(img).unsqueeze(0).to(self.device)
 
-    def get_embedding(self, image_path):
+    def get_embedding(self, image_path: str) -> np.ndarray:
+        """
+        Extract face embedding from image.
+
+        :params image_path: Path to input image
+        :type image_path: str
+
+        :return: Face embedding vector
+        :rtype: numpy.ndarray
+
+        :note:
+            - Uses model backbone only
+            - Returns CPU numpy array
+        """
         img_tensor = self.preprocess_image(image_path)
         with torch.no_grad():
             # Directly use backbone for embeddings
             embedding = self.model.backbone(img_tensor)
         return embedding.cpu().numpy()
 
-    def verify(self, anchor_path, test_paths, threshold=None):
+    def verify(self, anchor_path: str, test_paths: List[str], threshold: Optional[float] = None) -> List[Dict]:
+        """
+        Verify face similarity against anchor image.
+
+        :params anchor_path: Path to anchor/reference image
+        :type anchor_path: str
+
+        :params test_paths: List of paths to test images
+        :type test_paths: List[str]
+
+        :params threshold: Optional similarity threshold (uses config default if None)
+        :type threshold: Optional[float]
+
+        :return: List of verification results with:
+            - path: str - Test image path
+            - similarity: float - Cosine similarity score
+            - is_same: bool - Verification decision
+                :rtype: List[Dict]
+        """
         if threshold is None:
             threshold = self.config.VERIFICATION_THRESHOLD
 
@@ -76,8 +153,19 @@ class FaceVerifier:
 
         return results
 
-    def evaluate_verification(self, results, expected_labels):
-        """Evaluate verification performance"""
+    def evaluate_verification(self, results: List[Dict], expected_labels: List[bool]) -> float:
+        """
+        Calculate verification accuracy.
+
+        :params results: Verification results from verify() method
+        :type results: List[Dict]
+
+        :params expected_labels: Ground truth labels (True/False for match)
+        :type expected_labels: List[bool]
+
+        :return: Accuracy score between 0 and 1
+        :rtype: float
+        """
         correct = 0
         total = len(results)
 
