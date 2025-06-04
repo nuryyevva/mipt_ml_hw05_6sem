@@ -48,7 +48,7 @@ addopts = "--cov=src --cov-report=term-missing --cov-report=html --import-mode=i
 branch = true
 omit = [
     "**/__init__.py",
-    "**/config/*.py",
+    "**/config.py",
     "**/hparams.py",
     "**/tests/*.py",
     "**/sandbox.py",

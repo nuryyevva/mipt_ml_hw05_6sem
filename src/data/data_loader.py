@@ -1,6 +1,6 @@
 import os
 
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from PIL import Image
@@ -91,7 +91,7 @@ class LFWFaceDataset(Dataset):
 
 def get_lfw_dataloaders(
     batch_size: int = 32, data_dir: str = "./data", min_faces: int = 100, resize: float | None = None
-) -> tuple[DataLoader, DataLoader, DataLoader]:
+) -> tuple[DataLoader, DataLoader, DataLoader, list]:
     """
     Downloads, preprocesses, and splits the LFW dataset into train, validation, and test DataLoaders.
 
@@ -104,7 +104,7 @@ def get_lfw_dataloaders(
     :param resize: Ratio to resize each face picture.
     :type resize: float, optional
     :return: A tuple containing the train, validation, and test DataLoaders.
-    :rtype: tuple[DataLoader, DataLoader, DataLoader]
+    :rtype: tuple[DataLoader, DataLoader, DataLoader, list]
     """
     # Ensure data directory exists
     os.makedirs(data_dir, exist_ok=True)
@@ -117,6 +117,7 @@ def get_lfw_dataloaders(
     # Extract data and targets
     X = lfw_dataset.images
     y = lfw_dataset.target
+    target_names = lfw_dataset.target_names
 
     # Print dataset information
     print(f"Loaded LFW dataset with {X.shape[0]} images")
@@ -171,5 +172,4 @@ def get_lfw_dataloaders(
         test_dataset, batch_size=batch_size, shuffle=False, num_workers=2, pin_memory=torch.cuda.is_available()
     )
 
-    return train_loader, val_loader, test_loader
-
+    return train_loader, val_loader, test_loader, target_names

@@ -37,6 +37,8 @@ cover/
 /embeddings
 /wandb/
 /src/wandb
-/model
+/model/
 
 /data/
+/logs/
+/notebooks/.ipynb_checkpoints/
