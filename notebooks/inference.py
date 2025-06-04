@@ -8,7 +8,7 @@ from src.config import Config
 from src.utils.verification import FaceVerifier
 
 
-def run_face_verification(demo_dir, person_name):
+def run_face_verification(demo_dir=".photos", person_name="somebody"):
     """
     Run face verification pipeline
 
@@ -130,3 +130,7 @@ def visualize_results(anchor_path, results, expected_labels, metrics, person_nam
     disp.plot(cmap="Blues")
     plt.title("Confusion Matrix")
     plt.show()
+
+
+if __name__ == "__main__":
+    run_face_verification()
