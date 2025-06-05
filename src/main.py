@@ -4,7 +4,7 @@ import torch
 
 import wandb
 from config import Config
-from data.data_loader import get_lfw_dataloaders
+from src.data.data_loader import get_lfw_dataloaders
 from src.model.face_recognition import FaceRecognitionModel
 from src.train import Trainer
 from src.utils.evaluator import ModelEvaluator
@@ -60,7 +60,7 @@ def main() -> None:
     # Evaluate model
     logger.info("Starting evaluation...")
     evaluator = ModelEvaluator(model, test_loader, config)
-    evaluator.evaluate()
+    eval_results = evaluator.evaluate()
 
     # Log test metrics to WandB
     if config.USE_WANDB:
