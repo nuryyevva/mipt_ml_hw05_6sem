@@ -173,3 +173,7 @@ def get_lfw_dataloaders(
     )
 
     return train_loader, val_loader, test_loader, target_names
+
+
+if __name__ == "__main__":
+    get_lfw_dataloaders()
