@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -81,7 +82,7 @@ def test_train_epoch(setup):
     model.forward = mock_forward
 
     try:
-        loss, acc = trainer.train_epoch()
+        loss, acc = trainer.train_epoch(1)
 
         assert isinstance(loss, float)
         assert isinstance(acc, float)
@@ -105,7 +106,7 @@ def test_validate(setup):
     model.forward = mock_forward
 
     try:
-        loss, acc = trainer.validate()
+        loss, acc = trainer.validate(1)
 
         assert isinstance(loss, float)
         assert isinstance(acc, float)
@@ -119,6 +120,7 @@ def test_validate(setup):
 def test_train(mock_writer, mock_save, setup):
     model, train_loader, val_loader, config = setup
     config.NUM_EPOCHS = 5
+    config.MODEL_SAVE_PATH = Path(__file__).parent.parent / "model/face_recognition_model_01.pth"
 
     mock_writer_instance = MagicMock()
     mock_writer_instance.add_scalar = MagicMock()
@@ -175,5 +177,3 @@ def test_scheduler_step(setup):
         trainer.scheduler.step = original_step
         if os.path.exists(config.MODEL_SAVE_PATH):
             os.remove(config.MODEL_SAVE_PATH)
-        if os.path.exists(os.path.dirname(config.MODEL_SAVE_PATH)):
-            os.rmdir(os.path.dirname(config.MODEL_SAVE_PATH))
