@@ -1,8 +1,10 @@
 import os
 from datetime import datetime
+from typing import Tuple, TypeVar
 
 import torch
 import torch.nn as nn
+from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
@@ -11,9 +13,21 @@ from src.utils.logger import setup_logger
 from src.utils.optimizer import get_optimizer
 from src.utils.scheduler import get_scheduler
 
+# Type variable for model
+Model = TypeVar("Model", bound=nn.Module)
+
 
 class Trainer:
-    def __init__(self, model, train_loader, val_loader, config):
+    """Handles model training and validation process.
+
+    :param model: The neural network model to train
+    :param train_loader: DataLoader for training data
+    :param val_loader: DataLoader for validation data
+    :param config: Configuration object with training parameters
+    """
+
+    def __init__(self, model: Model, train_loader: DataLoader, val_loader: DataLoader, config: object) -> None:
+        """Initialize trainer with model, data loaders and configuration."""
         self.model = model
         self.train_loader = train_loader
         self.val_loader = val_loader
@@ -47,7 +61,13 @@ class Trainer:
 
         self.best_val_acc = 0.0
 
-    def train_epoch(self, epoch):
+    def train_epoch(self, epoch) -> Tuple[float, float]:
+        """Train model for one epoch.
+
+        :returns: Tuple containing:
+            - epoch_loss: Average loss for the epoch
+            - epoch_acc: Accuracy for the epoch (percentage)
+        """
         self.model.train()
         running_loss = 0.0
         correct = 0
@@ -76,7 +96,13 @@ class Trainer:
         epoch_acc = 100.0 * correct / total
         return epoch_loss, epoch_acc
 
-    def validate(self, epoch):
+    def validate(self, epoch) -> Tuple[float, float]:
+        """Validate model on validation set.
+
+        :returns: Tuple containing:
+            - val_loss: Average loss on validation set
+            - val_acc: Accuracy on validation set (percentage)
+        """
         self.model.eval()
         val_loss = 0.0
         correct = 0
@@ -102,7 +128,15 @@ class Trainer:
         val_acc = 100.0 * correct / total
         return val_loss, val_acc
 
-    def train(self):
+    def train(self) -> None:
+        """Run full training process including multiple epochs.
+
+        Performs:
+        - Training for specified number of epochs
+        - Validation after each epoch
+        - Logging metrics to TensorBoard
+        - Model saving when validation accuracy improves
+        """
         for epoch in range(self.config.NUM_EPOCHS):
             train_loss, train_acc = self.train_epoch(epoch)
             val_loss, val_acc = self.validate(epoch)

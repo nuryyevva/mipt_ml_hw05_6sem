@@ -11,8 +11,18 @@ from src.utils.evaluator import ModelEvaluator
 from src.utils.logger import setup_logger
 
 
-def main():
-    # Setup logger
+def main() -> None:
+    """Main function to execute the face recognition pipeline.
+
+    The pipeline includes:
+    - Loading configuration
+    - Preparing data
+    - Initializing the model
+    - Training or loading a pre-trained model
+    - Evaluating the model
+
+    :returns: None
+    """
     logger = setup_logger("Main")
 
     # Load configuration
@@ -50,7 +60,7 @@ def main():
     # Evaluate model
     logger.info("Starting evaluation...")
     evaluator = ModelEvaluator(model, test_loader, config)
-    eval_results = evaluator.evaluate()
+    evaluator.evaluate()
 
     # Log test metrics to WandB
     if config.USE_WANDB:
