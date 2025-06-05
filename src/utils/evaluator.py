@@ -27,8 +27,6 @@ class ModelEvaluator:
         self.test_loader = test_loader
         self.config = config
         self.device = config.DEVICE
-
-        # Ensure model is on the correct device and in evaluation mode
         self.model.to(self.device)
         self.model.eval()
 
@@ -51,32 +49,30 @@ class ModelEvaluator:
         total = 0
         all_embeddings = []
         all_labels = []
+        all_predictions = []
 
-        # Use inference mode for efficiency
         with torch.no_grad():
-            # Wrap loader in progress bar for better UX
             for inputs, labels in tqdm(self.test_loader, desc="Evaluating"):
-                # Move data to the same device as model
-                inputs = inputs.to(self.device)
-                labels = labels.to(self.device)
+                inputs, labels = inputs.to(self.device), labels.to(self.device)
 
                 # Forward pass - get class predictions
                 outputs = self.model(inputs)
 
-                # Get predicted classes (indices of max log-probability)
+                # Get predictions
                 _, predicted = torch.max(outputs, 1)
 
-                # Update accuracy metrics
+                # Update metrics
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
 
-                # Get embeddings for potential verification analysis
-                # Note: Assumes model has get_embeddings() method
+                # Get embeddings
                 embeddings = self.model.get_embeddings(inputs)
-                all_embeddings.append(embeddings.cpu())  # Move to CPU to save GPU memory
-                all_labels.append(labels.cpu())
 
-        # Calculate final accuracy
+                # Store results
+                all_embeddings.append(embeddings.cpu())
+                all_labels.append(labels.cpu())
+                all_predictions.append(predicted.cpu())
+
         accuracy = 100.0 * correct / total
         print(f"Test Accuracy: {accuracy:.2f}%")
 
@@ -84,4 +80,5 @@ class ModelEvaluator:
             "accuracy": accuracy,
             "embeddings": torch.cat(all_embeddings, dim=0),
             "labels": torch.cat(all_labels, dim=0),
+            "predictions": torch.cat(all_predictions, dim=0),
         }
