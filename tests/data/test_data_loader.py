@@ -86,7 +86,7 @@ def test_edge_cases(mock_lfw_dataset_small):
 
 def test_dataloader_transforms(tmp_path):
     """Test transform differences between train/val"""
-    train_loader, val_loader, _ = get_lfw_dataloaders(data_dir=str(tmp_path / "data"), min_faces=20, resize=0.1)
+    train_loader, val_loader, _, _ = get_lfw_dataloaders(data_dir=str(tmp_path / "data"), min_faces=20, resize=0.1)
 
     # Train should have augmentations
     assert any(isinstance(t, transforms.RandomHorizontalFlip) for t in train_loader.dataset.transform.transforms)
