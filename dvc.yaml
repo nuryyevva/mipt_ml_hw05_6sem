@@ -1,0 +1,19 @@
+stages:
+  prepare_data:
+    cmd: make install_dataset
+    deps:
+      - Makefile
+    outs:
+      - data/lfw_home
+  train:
+    cmd: make train
+    deps:
+      - data/lfw_home
+      - src/main.py
+    outs:
+      - model/face_recognition_model_05.pth
+  inference:
+    cmd: make inference
+    deps:
+      - src/inference.py
+      - model/face_recognition_model_05.pth

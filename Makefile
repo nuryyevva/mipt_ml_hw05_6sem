@@ -11,3 +11,12 @@ lint:
 
 hooks:
 	poetry run pre-commit install --install-hooks
+
+install_dataset:
+	poetry run python src/data/data_loader.py
+
+train:
+	poetry run python src/main.py
+
+inference:
+	poetry run python notebooks/inference.py
