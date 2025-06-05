@@ -9,7 +9,18 @@ from src.train import Trainer
 from src.utils.evaluator import ModelEvaluator
 
 
-def main():
+def main() -> None:
+    """Main function to execute the face recognition pipeline.
+
+    The pipeline includes:
+    - Loading configuration
+    - Preparing data
+    - Initializing the model
+    - Training or loading a pre-trained model
+    - Evaluating the model
+
+    :returns: None
+    """
     # Load configuration
     config = Config()
 
@@ -42,7 +53,7 @@ def main():
 
     # Evaluate model
     evaluator = ModelEvaluator(model, test_loader, config)
-    eval_results = evaluator.evaluate()
+    evaluator.evaluate()
 
 
 if __name__ == "__main__":
